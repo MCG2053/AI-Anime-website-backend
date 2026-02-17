@@ -1,4 +1,6 @@
-# Anime Website Backend API
+# Anime Website Backend API  
+
+English | [简体中文](./README.md) 
 
 A Spring Boot 3 based backend service for anime website, providing complete features including user authentication, video management, comments, danmaku, etc.
 
