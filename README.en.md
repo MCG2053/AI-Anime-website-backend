@@ -192,4 +192,4 @@ type:
 
 ## Related Projects
 
-- Frontend Project: [Anime_Website](https://github.com/MCG2053/Anime_Website)
+- Frontend Project: [Anime_Website](https://github.com/MCG2053/Anime_website)
