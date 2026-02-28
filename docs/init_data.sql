@@ -1,27 +1,197 @@
 -- ============================================
 -- 动漫网站数据库初始化脚本
--- 使用方法: mysql -u root -p anime_website < init_data.sql
+-- 使用方法: mysql -u root -p < init_data.sql
 -- ============================================
+
+-- 创建数据库（如果不存在）
+CREATE DATABASE IF NOT EXISTS anime_website DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 使用数据库
 USE anime_website;
 
--- 清空现有数据（谨慎使用）
+-- ============================================
+-- 删除现有表（按外键依赖顺序，谨慎使用）
+-- ============================================
 SET FOREIGN_KEY_CHECKS = 0;
-TRUNCATE TABLE video_tags;
-TRUNCATE TABLE video_collections;
-TRUNCATE TABLE video_likes;
-TRUNCATE TABLE comment_likes;
-TRUNCATE TABLE danmaku;
-TRUNCATE TABLE comments;
-TRUNCATE TABLE watch_history;
-TRUNCATE TABLE user_anime;
-TRUNCATE TABLE episodes;
-TRUNCATE TABLE videos;
-TRUNCATE TABLE tags;
-TRUNCATE TABLE categories;
-TRUNCATE TABLE users;
+DROP TABLE IF EXISTS comment_likes;
+DROP TABLE IF EXISTS video_tags;
+DROP TABLE IF EXISTS video_collections;
+DROP TABLE IF EXISTS video_likes;
+DROP TABLE IF EXISTS danmaku;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS watch_history;
+DROP TABLE IF EXISTS user_anime;
+DROP TABLE IF EXISTS episodes;
+DROP TABLE IF EXISTS videos;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================
+-- 创建表结构
+-- ============================================
+
+-- 1. 用户表
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    avatar VARCHAR(500),
+    bio VARCHAR(500),
+    created_at DATETIME,
+    updated_at DATETIME
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 2. 分类表
+CREATE TABLE categories (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    slug VARCHAR(50) UNIQUE,
+    icon VARCHAR(200)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 3. 标签表
+CREATE TABLE tags (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    type VARCHAR(20)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 4. 视频表
+CREATE TABLE videos (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    cover VARCHAR(500),
+    description TEXT,
+    play_count INT DEFAULT 0,
+    like_count INT DEFAULT 0,
+    collect_count INT DEFAULT 0,
+    episode VARCHAR(50),
+    category VARCHAR(50),
+    country VARCHAR(50),
+    year INT,
+    video_url VARCHAR(500),
+    created_at DATETIME,
+    updated_at DATETIME,
+    INDEX idx_videos_category (category),
+    INDEX idx_videos_year (year),
+    INDEX idx_videos_country (country),
+    INDEX idx_videos_play_count (play_count),
+    INDEX idx_videos_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 5. 集数表
+CREATE TABLE episodes (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    video_id BIGINT,
+    title VARCHAR(100) NOT NULL,
+    video_url VARCHAR(500),
+    duration INT,
+    episode_number INT,
+    created_at DATETIME,
+    INDEX idx_episodes_video_id (video_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 6. 视频标签关联表
+CREATE TABLE video_tags (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    video_id BIGINT,
+    tag_id BIGINT,
+    INDEX idx_video_tags_video_id (video_id),
+    INDEX idx_video_tags_tag_id (tag_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7. 评论表
+CREATE TABLE comments (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT,
+    video_id BIGINT,
+    parent_id BIGINT,
+    content TEXT,
+    like_count INT DEFAULT 0,
+    created_at DATETIME,
+    INDEX idx_comments_video_id (video_id),
+    INDEX idx_comments_user_id (user_id),
+    INDEX idx_comments_parent_id (parent_id),
+    INDEX idx_comments_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 8. 评论点赞表
+CREATE TABLE comment_likes (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT,
+    comment_id BIGINT,
+    created_at DATETIME,
+    INDEX idx_comment_likes_user_id (user_id),
+    INDEX idx_comment_likes_comment_id (comment_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 9. 弹幕表
+CREATE TABLE danmaku (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    video_id BIGINT,
+    episode_id BIGINT,
+    user_id BIGINT,
+    content TEXT,
+    time DOUBLE,
+    color VARCHAR(20) DEFAULT '#ffffff',
+    type VARCHAR(20) DEFAULT 'scroll',
+    created_at DATETIME,
+    INDEX idx_danmaku_video_episode (video_id, episode_id),
+    INDEX idx_danmaku_video_id (video_id),
+    INDEX idx_danmaku_time (time),
+    INDEX idx_danmaku_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 10. 视频点赞表
+CREATE TABLE video_likes (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT,
+    video_id BIGINT,
+    created_at DATETIME,
+    INDEX idx_video_likes_user_id (user_id),
+    INDEX idx_video_likes_video_id (video_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 11. 视频收藏表
+CREATE TABLE video_collections (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT,
+    video_id BIGINT,
+    created_at DATETIME,
+    INDEX idx_video_collections_user_id (user_id),
+    INDEX idx_video_collections_video_id (video_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 12. 观看历史表
+CREATE TABLE watch_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT,
+    video_id BIGINT,
+    episode_id BIGINT,
+    episode_title VARCHAR(100),
+    progress INT,
+    watched_at DATETIME,
+    INDEX idx_watch_history_user_id (user_id),
+    INDEX idx_watch_history_video_id (video_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 13. 用户追番表
+CREATE TABLE user_anime (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT,
+    video_id BIGINT,
+    status VARCHAR(20),
+    added_at DATETIME,
+    INDEX idx_user_anime_user_id (user_id),
+    INDEX idx_user_anime_video_id (video_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- 插入初始数据
+-- ============================================
 
 -- ============================================
 -- 1. 分类数据
@@ -250,7 +420,14 @@ INSERT INTO episodes (video_id, title, video_url, duration, episode_number, crea
 (10, '第5集 上古遗种', 'https://example.com/videos/perfectworld-ep5.mp4', 1440, 5, NOW());
 
 -- ============================================
--- 6. 测试评论
+-- 6. 测试用户（密码为 123456 的BCrypt加密）
+-- ============================================
+INSERT INTO users (username, email, password, avatar, bio, created_at, updated_at) VALUES
+('admin', 'admin@anime.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', 'https://picsum.photos/seed/admin/200/200', '管理员账号', NOW(), NOW()),
+('testuser', 'test@anime.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', 'https://picsum.photos/seed/test/200/200', '测试用户', NOW(), NOW());
+
+-- ============================================
+-- 7. 测试评论
 -- ============================================
 INSERT INTO comments (user_id, video_id, parent_id, content, like_count, created_at) VALUES
 (1, 1, NULL, '神作！进击的巨人结局太震撼了', 128, NOW()),
@@ -258,7 +435,7 @@ INSERT INTO comments (user_id, video_id, parent_id, content, like_count, created
 (1, 9, NULL, '国漫之光，斗罗大陆yyds', 512, NOW());
 
 -- ============================================
--- 7. 测试弹幕
+-- 8. 测试弹幕
 -- ============================================
 INSERT INTO danmaku (video_id, episode_id, user_id, content, time, color, type, created_at) VALUES
 (1, 1, 1, '前方高能预警', 120.5, '#ff0000', 'scroll', NOW()),
@@ -270,7 +447,8 @@ INSERT INTO danmaku (video_id, episode_id, user_id, content, time, color, type, 
 -- ============================================
 -- 完成提示
 -- ============================================
-SELECT '数据初始化完成！' AS message;
+SELECT '数据库初始化完成！' AS message;
 SELECT COUNT(*) AS video_count FROM videos;
 SELECT COUNT(*) AS category_count FROM categories;
 SELECT COUNT(*) AS tag_count FROM tags;
+SELECT COUNT(*) AS user_count FROM users;
