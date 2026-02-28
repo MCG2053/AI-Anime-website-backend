@@ -11,6 +11,8 @@
 8. [Linux服务器部署](#8-linux服务器部署)
 9. [Docker部署](#9-docker部署)
 
+> 📖 **详细的API测试用例和示例请查看 [API_TEST.md](API_TEST.md)**
+
 ---
 
 ## 1. 环境准备

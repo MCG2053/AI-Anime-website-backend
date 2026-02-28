@@ -55,6 +55,7 @@
 | [完整操作手册](docs/OPERATION_GUIDE.md) | 详细的配置和使用说明 |
 | [Ubuntu部署指南](docs/DEPLOY_UBUNTU.md) | Ubuntu服务器完整部署流程 |
 | [CentOS部署指南](docs/DEPLOY_CENTOS.md) | CentOS/RHEL服务器完整部署流程 |
+| [🧪 API测试文档](docs/API_TEST.md) | **完整的API接口测试用例和示例** |
 | [初始化数据](docs/init_data.sql) | 测试数据SQL脚本 |
 
 ## 快速开始

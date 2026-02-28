@@ -37,9 +37,9 @@
   - [x] SubTask 5.3: 添加必要的索引
   - [x] SubTask 5.4: 性能测试验证
 
-- [ ] Task 6: Git提交
-  - [ ] SubTask 6.1: 提交所有代码修改
-  - [ ] SubTask 6.2: 推送到远程仓库
+- [x] Task 6: Git提交
+  - [x] SubTask 6.1: 提交所有代码修改
+  - [x] SubTask 6.2: 推送到远程仓库
 
 - [ ] Task 7: 更新文档
   - [ ] SubTask 7.1: 更新操作手册
